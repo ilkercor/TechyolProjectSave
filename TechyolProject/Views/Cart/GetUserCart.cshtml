@@ -1,0 +1,59 @@
+﻿@model ShoppingCart
+@{
+    ViewData["Title"] = "GetUserCart";
+}
+
+<div style="width:90%; margin:auto" class="mt-2">
+    
+    @if(Model != null && Model.CartDetails != null && Model.CartDetails.Count > 0)
+    {
+        <h3>Sepetim</h3>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Ürün İsmi</th>
+                <th>Görsel</th>
+                <th>Kategori</th>
+                <th>Adet Fiyatı</th>
+                <th>Adet Sayısı</th>
+                <th>Toplam Fiyat</th>
+                <th>İşlemler</th>
+            </tr>
+            @foreach(var item in Model.CartDetails)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>
+                        <img src="/images/@item.Product.Image" style="width:80px;height:100px" />
+                    </td>
+                    <td>@item.Product.Category.CategoryName</td>
+                    <td>@item.Product.Price </td>
+                    <td>X @item.Quantity</td>
+                    <td>@(item.Product.Price * @item.Quantity)</td>
+                    <td>
+                        <a class="btn btn-info" href="/Cart/AddItem?productID=@item.ProductId&&redirect=1">+</a>
+                        <a class="btn btn-info" href="/cart/removeitem?productid=@item.ProductId">-</a>
+                        <a class="btn btn-primary" href="/cart/removeall?productid=@item.ProductId">Aldım</a>
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <div class="my-2">
+            <h5>Toplam:</h5> 
+            @(Model.CartDetails.Select(item => item.Product.Price*item.Quantity).Sum())
+        </div>
+
+        <div>
+            <a class="btn btn-primary" href="/Cart/Checkout">Alışveriş Tamamlandı</a>
+        </div>
+    }
+    else
+    {
+        <h5>Sepetinizde hiç ürün yok.</h5>
+    }
+
+
+
+</div>
+

@@ -1,0 +1,67 @@
+﻿@model IEnumerable<Order>
+
+@{
+}
+<div style="width:100%" class="mt-2">
+    <a href="/Identity/Account/Manage" class="btn btn-primary my-2">Geri</a>
+
+    <h4>Siparişlerim</h4>
+    @if (Model != null && Model.Count() > 0)
+    {
+        <table class="table table-striped">
+            <tr>
+                <th>Alışveriş tarihi</th>
+                <th>Alışveriş Durumu</th>
+            </tr>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.CreateDate.ToString("dd-MM-yyyy")</td>
+                    <td>@order.OrderStatus.StatusName</td>
+                </tr>
+                @if (order.OrderDetails != null && order.OrderDetails.Count> 0)
+                {
+                    <tr>
+                        <td>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        Sepet toplamı:
+                                    </td>
+                                    <td>
+                                        @(order.OrderDetails.Select(item => item.Product.Price * item.Quantity).Sum())
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Görsel</th>
+                                    <th>Kategori</th>
+                                    <th>Adet Fiyatı</th>
+                                    <th>Toplam Fiyat</th>
+                                </tr>
+                                @foreach (var item in order.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>@item.Product.Name</td>
+                                        <td>
+                                           <img src="/images/@item.Product.Image" style="width:80px;height:100px" />
+                                        </td>
+                                        <td>@item.Product.Category.CategoryName</td>
+                                        <td>@item.Product.Price X @item.Quantity</td>
+                                        <td> @(item.Product.Price * item.Quantity) </td>
+                                    </tr>
+                                }
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+
+    }
+    else
+    {
+        <h5>No orders</h5>
+    }
+</div>

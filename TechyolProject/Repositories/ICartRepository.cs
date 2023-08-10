@@ -15,5 +15,9 @@
 
         Task<int> GetCartItemCount(string userId = "");
 
+        Task<bool> DoCheckout();
+
+        Task<int> RemoveAll(int productId);
+
     }
 }

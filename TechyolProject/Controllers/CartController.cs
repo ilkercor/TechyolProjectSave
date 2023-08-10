@@ -32,6 +32,14 @@ namespace TechyolProject.Controllers
             return RedirectToAction("GetUserCart");
         }
 
+        public async Task<IActionResult> RemoveAll(int productId)
+        {
+            var cartCount = await _cartRepo.RemoveAll(productId);
+
+            return RedirectToAction("GetUserCart");
+        }
+
+
         public async Task<IActionResult> GetUserCart()
         {
             var cart = await _cartRepo.GetUserCart();
@@ -43,6 +51,14 @@ namespace TechyolProject.Controllers
             int cartItem = await _cartRepo.GetCartItemCount();
             return Ok(cartItem);
         }
+
+        public async Task<IActionResult> Checkout()
+        {
+            bool isCheckedOut = await _cartRepo.DoCheckout();
+            if (!isCheckedOut)
+                throw new Exception("Something happen in server side");
+            return RedirectToAction("Index", "Home");
+        } 
 
     }
 }

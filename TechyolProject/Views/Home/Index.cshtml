@@ -44,8 +44,32 @@
                     <b>Kategori:</b> @product.CategoryName <br />
                     <b>Fiyat:</b> @string.Format("{0:N}", product.Price) ₺
             </p>
-        <a href="#" class="btn btn-primary">Go</a>
+        <button type="button" onclick="add(@product.Id)" class="btn btn-primary">Sepete Ekle</button>
     </div>
 </div>
 }
 </div>
+
+
+@section Scripts{
+    <script>
+        async function add(productId) {
+            var usernameEl = document.getElementById("username");
+            if (usernameEl == null) {
+                window.location.href = "/Identity/Account/Login";
+            }
+            try {
+                var response = await fetch(`/Cart/AddItem?productId=${productId}`);
+                if (response.status == 200) {
+                    var result = await response.json();
+                    var cartCountEl = document.getElementById("cartCount");
+                    cartCountEl.innerHTML = result;
+                    window.location.href = "#cartCount";
+                }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    </script>
+}

@@ -46,11 +46,13 @@ namespace TechyolProject.Repositories
                 }
                 else
                 {
+                    var product = _context.Product.Find(productId);
                     cartItem = new CartDetail
                     {
                         ProductId = productId,
                         ShoppingCartId = cart.Id,
-                        Quantity = qty
+                        Quantity = qty,
+                        UnitPrice = product.Price
                     };
                     _context.CartDetails.Add(cartItem);
                 }
@@ -69,7 +71,7 @@ namespace TechyolProject.Repositories
         public async Task<int> RemoveItem(int productId)
         {
             string userId = GetUserId();
-            using var transaction = _context.Database.BeginTransaction();
+            //using var transaction = _context.Database.BeginTransaction();
             try
             {
                 if (string.IsNullOrEmpty(userId))
@@ -82,8 +84,9 @@ namespace TechyolProject.Repositories
                     throw new Exception("cart is empty");
                 }
 
-                var cartItem = _context.CartDetails.FirstOrDefault(c => c.ShoppingCartId == cart.Id && c.ProductId == productId);
-                if (cartItem is not null)
+                var cartItem = _context.CartDetails
+                                .FirstOrDefault(a=>a.ShoppingCartId == cart.Id && a.ProductId == productId);
+                if (cartItem is null)
                 {
                     throw new Exception("No items in cart");
                 } else if (cartItem.Quantity == 1)
@@ -95,12 +98,65 @@ namespace TechyolProject.Repositories
                     cartItem.Quantity = cartItem.Quantity - 1;
                 }
                 _context.SaveChanges();
-                transaction.Commit();
-
             }
             catch (Exception ex)
             {
+                throw new Exception("hata");
+            }
+            var cartItemCount = await GetCartItemCount(userId);
+            return cartItemCount;
 
+        }
+
+        public async Task<int> RemoveAll(int productId)
+        {
+            string userId = GetUserId();
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    throw new Exception("user is not logged in");
+                }
+                var cart = await GetCart(userId);
+                if (cart is null)
+                {
+                    throw new Exception("cart is empty");
+                }
+
+                var cartItem = _context.CartDetails
+                                .FirstOrDefault(a => a.ShoppingCartId == cart.Id && a.ProductId == productId);
+                if (cartItem is null)
+                {
+                    throw new Exception("No items in cart");
+                }
+                else
+                {
+                    _context.CartDetails.Remove(cartItem);
+                    // Sipariş oluştur
+                    var order = new Order
+                    {
+                        UserID = userId,
+                        CreateDate = DateTime.UtcNow,
+                        OrderStatusID = 1 // Tamamlandı
+                    };
+                    _context.Orders.Add(order);
+                    _context.SaveChanges();
+
+                    // Sipariş detayı oluştur
+                    var orderDetail = new OrderDetail
+                    {
+                        ProductId = productId,
+                        OrderId = order.Id,
+                        Quantity = cartItem.Quantity, // Tek ürün olduğunu varsayalım
+                        UnitPrice = cartItem.UnitPrice // Ürünün fiyatını kullanabilirsiniz
+                    };
+                    _context.OrderDetails.Add(orderDetail);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("hata");
             }
             var cartItemCount = await GetCartItemCount(userId);
             return cartItemCount;
@@ -152,6 +208,54 @@ namespace TechyolProject.Repositories
             return userId;
         }
 
+        public async Task<bool> DoCheckout()
+        {
+            using var transaction = _context.Database.BeginTransaction();
+            try
+            {
+                
+                var userId = GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                    throw new Exception("User is not logged-in");
+                var cart = await GetCart(userId);
+                if (cart is null)
+                    throw new Exception("Invalid cart");
+                var cartDetail = _context.CartDetails
+                                    .Where(a => a.ShoppingCartId == cart.Id).ToList();
+                if (cartDetail.Count == 0)
+                    throw new Exception("Cart is empty");
+                var order = new Order
+                {
+                    UserID = userId,
+                    CreateDate = DateTime.UtcNow,
+                    OrderStatusID = 1//işlemde
+                };
+                _context.Orders.Add(order);
+                _context.SaveChanges();
+                foreach (var item in cartDetail)
+                {
+                    var orderDetail = new OrderDetail
+                    {
+                        ProductId = item.ProductId,
+                        OrderId = order.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice
+                    };
+                    _context.OrderDetails.Add(orderDetail);
+                }
+                _context.SaveChanges();
 
+                // removing the cartdetails
+                _context.CartDetails.RemoveRange(cartDetail);
+                _context.SaveChanges();
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+        }
     }
 }

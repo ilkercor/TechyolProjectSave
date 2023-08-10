@@ -11,7 +11,7 @@ namespace TechyolProject.Models
         public int Id { get; set; }
 
         [Required]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         public DateTime CreateDate { get; set; } = DateTime.UtcNow;
 
