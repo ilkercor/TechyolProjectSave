@@ -45,7 +45,16 @@
                                     <tr>
                                         <td>@item.Product.Name</td>
                                         <td>
-                                           <img src="/images/@item.Product.Image" style="width:80px;height:100px" />
+                                            @if (item.Product.Image.StartsWith("https"))
+                                            {
+
+                                                <img style="width:100%;height:300px" src="@item.Product.Image" class="card-img-top" alt="...">
+                                            }
+                                            else
+                                            {
+
+                                                <img style="width:100%;height:300px" src="/images/@item.Product.Image" class="card-img-top" alt="...">
+                                            }
                                         </td>
                                         <td>@item.Product.Category.CategoryName</td>
                                         <td>@item.Product.Price X @item.Quantity</td>
@@ -62,6 +71,6 @@
     }
     else
     {
-        <h5>No orders</h5>
+        <h5>Hiç sipariş yok.</h5>
     }
 </div>
