@@ -71,7 +71,6 @@ namespace TechyolProject.Repositories
         public async Task<int> RemoveItem(int productId)
         {
             string userId = GetUserId();
-            //using var transaction = _context.Database.BeginTransaction();
             try
             {
                 if (string.IsNullOrEmpty(userId))
@@ -147,8 +146,8 @@ namespace TechyolProject.Repositories
                     {
                         ProductId = productId,
                         OrderId = order.Id,
-                        Quantity = cartItem.Quantity, // Tek ürün olduğunu varsayalım
-                        UnitPrice = cartItem.UnitPrice // Ürünün fiyatını kullanabilirsiniz
+                        Quantity = cartItem.Quantity,
+                        UnitPrice = cartItem.UnitPrice
                     };
                     _context.OrderDetails.Add(orderDetail);
                     _context.SaveChanges();
